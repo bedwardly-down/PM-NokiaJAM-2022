@@ -9,5 +9,8 @@
   "devDependencies": {
     "nodemon": "^2.0.15",
     "pm2": "^5.1.2"
+  },
+  "dependencies": {
+    "yarn": "^1.22.17"
   }
 }
