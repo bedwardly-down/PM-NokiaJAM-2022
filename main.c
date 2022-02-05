@@ -100,6 +100,19 @@ void drawAngry() {
   A4.ctrl = A3.ctrl|OAM_FLIPH;
 }
 
+void drawCockedRevolver() {
+  #define R1 OAM[13]
+  R1.x = 56;
+  R1.y = 36;
+  R1.tile = 12;
+  R1.ctrl = OAM_ENABLE;
+
+  #define R2 OAM[14]
+  R2 = R1;
+  R2.x = R1.x + 16;
+  R2.tile = 13;
+}
+
 int main()
 {
   uint8_t i;
@@ -125,6 +138,7 @@ int main()
   drawBL();
   drawBR();
   drawAngry();
+  drawCockedRevolver();
 
   for(;;) {
   }
