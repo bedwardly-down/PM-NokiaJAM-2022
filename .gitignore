@@ -1,0 +1,13 @@
+bin-windows
+wineprefix
+c88tools
+temp-setup
+*.zip
+*~
+#*#
+*.min
+*.sre
+*.map
+*.out
+*.obj
+/env/pm/lib/
