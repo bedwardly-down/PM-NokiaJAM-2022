@@ -1,0 +1,13 @@
+{
+  "name": "pm-nokia",
+  "version": "1.0.0",
+  "description": "Pm-Nokia Jam Entry",
+  "main": "index.js",
+  "author": "Brandon D <social@brandongrows.me>",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "nodemon": "^2.0.15",
+    "pm2": "^5.1.2"
+  }
+}

@@ -10,4 +10,6 @@ temp-setup
 *.map
 *.out
 *.obj
-/env/pm/lib/
+env/pm/lib
+node_modules
+*.lock
