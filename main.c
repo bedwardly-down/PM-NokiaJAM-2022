@@ -76,6 +76,30 @@ void drawBR() {
   BL8.ctrl = OAM_ENABLE|OAM_FLIPH;
 }
 
+void drawAngry() {
+  #define A1 OAM[8]
+  A1.x = 24;
+  A1.y = 24;
+  A1.tile = 0;
+  A1.ctrl = OAM_ENABLE;
+
+  #define A2 OAM[9]
+  A2 = A1;
+  A2.x = 40;
+  A2.ctrl = A1.ctrl|OAM_FLIPH;
+
+  #define A3 OAM[10]
+  A3.x = A1.x;
+  A3.y = 40;
+  A3.tile = 3;
+  A3.ctrl = OAM_ENABLE;
+
+  #define A4 OAM[12]
+  A4 = A3;
+  A4.x = 40;
+  A4.ctrl = A3.ctrl|OAM_FLIPH;
+}
+
 int main()
 {
   uint8_t i;
@@ -100,8 +124,8 @@ int main()
 
   drawBL();
   drawBR();
+  drawAngry();
 
   for(;;) {
-    //drawAngry();
   }
 }
