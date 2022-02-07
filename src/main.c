@@ -92,12 +92,35 @@ void drawCockedRevolver() {
   R2.tile = 13;
 }
 
-void drawPC() {
-  #define PC OAM[8]
+void drawEntities(b) {
+  uint8_t ovr = 3;
+  uint8_t bFlipV = 0;
+  uint8_t bFlipH = 0;
+
+  #define PC OAM[23]
   PC.x = 24;
   PC.y = 24;
   PC.tile = 4;
   PC.ctrl = OAM_ENABLE;
+
+  #define PCO OAM[22]
+  PCO = PC;
+  PCO.tile = ovr;
+
+  #define E1 OAM[21]
+  E1 = PC;
+  E1.x = 48;
+  E1.y = PC.y - 8;
+
+  #define E1O OAM[20]
+  if (b == 1) {
+    ovr = 5;
+    bFlipV = OAM_FLIPV;
+  }
+
+  E1O = E1;
+  E1O.tile = ovr;
+  E1O.ctrl = OAM_ENABLE|bFlipV|bFlipH;
 }
 
 int main()
@@ -105,6 +128,7 @@ int main()
   uint8_t i;
   uint8_t tw = 16;
   uint8_t th = 12;
+  uint8_t bBWall = 0;
 
   PRC_MODE = COPY_ENABLE|SPRITE_ENABLE|MAP_ENABLE|MAP_16X12;
   PRC_RATE = RATE_36FPS;
@@ -126,7 +150,8 @@ int main()
   drawBR();
   //drawAngry();
   //drawCockedRevolver();
-  drawPC();
+  bBWall = 1;
+  drawEntities(bBWall);
 
   for(;;) {
   }
