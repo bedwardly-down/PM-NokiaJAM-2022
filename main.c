@@ -123,7 +123,7 @@ int main()
   PRC_RATE = RATE_36FPS;
 
   PRC_MAP = tiles;
-  PRC_SPR = sprites1;
+  PRC_SPR = sprites;
 
   // create blank tilemap
   for (i = 0; i < tw * th; i++) {
