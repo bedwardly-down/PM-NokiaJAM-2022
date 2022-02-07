@@ -92,6 +92,14 @@ void drawCockedRevolver() {
   R2.tile = 13;
 }
 
+void drawPC() {
+  #define PC OAM[8]
+  PC.x = 24;
+  PC.y = 24;
+  PC.tile = 4;
+  PC.ctrl = OAM_ENABLE;
+}
+
 int main()
 {
   uint8_t i;
@@ -118,6 +126,7 @@ int main()
   drawBR();
   //drawAngry();
   //drawCockedRevolver();
+  drawPC();
 
   for(;;) {
   }
