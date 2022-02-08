@@ -8,7 +8,7 @@ const uint8_t _rom tiles[] _at(0x015000) = {
 };
 
 void drawEntities() {
-  #define PC OAM[23]
+  #define PC OAM[22]
   PC.x = 24 - 4;
   PC.y = 24 - 4;
   PC.tile = PC_ID;
@@ -26,56 +26,97 @@ void drawEntities() {
   E2.tile = E2_ID;
   E2.ctrl = OAM_ENABLE;
 
-  #define SHOT OAM[17]
-  E3.x = 160;
-  E3.y = 24;
-  E3.tile = SHOT_ID;
-  E3.ctrl = OAM_ENABLE;
+  #define SHOT OAM[23]
+  SHOT.x = 96;
+  SHOT.y = 0;
+  SHOT.tile = SHOT_ID;
+  SHOT.ctrl = !OAM_ENABLE;
 }
 
 void drawItems() {
   #define HT OAM[0]
-  HT.x = 160;
+  HT.x = 96;
   HT.y = 0;
   HT.tile = HEART_ID;
   HT.ctrl = OAM_ENABLE;
 }
 
+void pcShoot(d, bL, bR, bT, bB) {
+  uint8_t yP = 0;
+  uint8_t xP = 0;
+  uint8_t bP = 4;
+
+  if (d != 0) {
+    SHOT.ctrl = OAM_ENABLE;
+    if (d == 1 && !(SHOT.y - bP <= bT)) {
+      yP = -1;
+    }
+    else if (d == 2 && !(SHOT.y + bP >= bB)) {
+      yP = 1;
+    }
+    else if (d == 3 && !(SHOT.x - bP <= bL)) {
+      xP = -1;
+    }
+    else if (d == 4 && !(SHOT.x + bP >= bR)) {
+      xP = 1;
+    }
+  }
+  else {
+    SHOT.ctrl = !OAM_ENABLE;
+  }
+  SHOT.x = (PC.x + (xP * 3));
+  SHOT.y = (PC.y + (yP * 3));
+}
+
 void handleInput() {
   uint8_t speed = 2;
+  uint8_t direction = 0;
 
-  if ((~KEY_PAD & KEY_DOWN) && PC.y < 60) {
+  // bounds
+  uint8_t bT = 20;
+  uint8_t bB = 60;
+  uint8_t bL = 18;
+  uint8_t bR = 94;
+
+  if ((~KEY_PAD & KEY_DOWN) && PC.y < bB) {
+    PC.y += speed;
+    direction = 2;
+  }
+  else if ((~KEY_PAD & KEY_UP) && PC.y > bT) {
+    PC.y -= speed;
+    direction = 1;
+  }
+  else if ((~KEY_PAD & KEY_LEFT) && PC.x > bL) {
+    PC.x -= speed;
+    direction = 3;
+  }
+  else if ((~KEY_PAD & KEY_RIGHT) && PC.x < bR) {
+    PC.x += speed;
+    direction = 4;
+  }
+
+  pcShoot(direction, bL, bR, bT, bB);
+
+  /*else if ((~KEY_PAD & KEY_RIGHT & KEY_UP) && PC.y > bT && PC.x < bR) {
+    speed /= 2;
+    PC.x += speed;
+    PC.y -= speed;
+  }
+  else if ((~KEY_PAD & KEY_LEFT & KEY_UP) && PC.y > bT && PC.x > bL) {
+    speed /= 2;
+    PC.x -= speed;
+    PC.y -= speed;
+  }
+  else if ((~KEY_PAD & KEY_RIGHT & KEY_DOWN) && PC.y < bB && PC.x < bR) {
+    speed /= 2;
+    PC.x += speed;
     PC.y += speed;
   }
-  else if ((~KEY_PAD & KEY_UP) && PC.y > 20) {
-    PC.y -= speed;
-  }
-  else if ((~KEY_PAD & KEY_LEFT) && PC.x > 20) {
-    PC.x -= speed;
-  }
-  else if ((~KEY_PAD & KEY_RIGHT) && PC.x < 92) {
-    PC.x += speed;
-  }
-  else if ((~KEY_PAD & KEY_RIGHT & KEY_UP) && PC.y > 20 && PC.x < 92) {
+  else if ((~KEY_PAD & KEY_RIGHT & KEY_DOWN) && PC.y < bB && PC.x < bR) {
     speed /= 2;
     PC.x += speed;
     PC.y -= speed;
-  }
-  else if ((~KEY_PAD & KEY_LEFT & KEY_UP) && PC.y > 20 && PC.x > 20) {
-    speed /= 2;
-    PC.x -= speed;
-    PC.y -= speed;
-  }
-  else if ((~KEY_PAD & KEY_RIGHT & KEY_DOWN) && PC.y < 60 && PC.x < 92) {
-    speed /= 2;
-    PC.x += speed;
-    PC.y += speed;
-  }
-  else if ((~KEY_PAD & KEY_RIGHT & KEY_UP) && PC.y > 20 && PC.x < 92) {
-    speed /= 2;
-    PC.x += speed;
-    PC.y -= speed;
-  }
+  }*/
 }
 
 int main()
