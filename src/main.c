@@ -138,7 +138,7 @@ int main()
 
   // create blank tilemap
   for (i = 0; i < tw * th; i++) {
-    if (i < 12 || i > 108) {
+    if (i < 12 || i > 108 || i % tw == 0 || i == 27 || i == 43 || i == 59 | i == 75 || i == 91 || i == 107) {
       TILEMAP[i] = 0xff;
     }
     else {
@@ -146,10 +146,6 @@ int main()
     }
   }
 
-  drawBL();
-  drawBR();
-  //drawAngry();
-  //drawCockedRevolver();
   bBWall = 1;
   drawEntities(bBWall);
 
