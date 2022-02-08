@@ -41,12 +41,12 @@ void drawItems() {
   HT.ctrl = OAM_ENABLE;
 }
 
-void pcShoot(d, bL, bR, bT, bB) {
+void pcShoot(d, bL, bR, bT, bB, s) {
   uint8_t yP = 0;
   uint8_t xP = 0;
   uint8_t bP = 4;
 
-  if (d != 0) {
+  if (d != 0 && s >= 1) {
     SHOT.ctrl = OAM_ENABLE;
     if (d == 1 && !(SHOT.y - bP <= bT)) {
       yP = -1;
@@ -60,6 +60,7 @@ void pcShoot(d, bL, bR, bT, bB) {
     else if (d == 4 && !(SHOT.x + bP >= bR)) {
       xP = 1;
     }
+    s = 0;
   }
   else {
     SHOT.ctrl = !OAM_ENABLE;
@@ -71,6 +72,7 @@ void pcShoot(d, bL, bR, bT, bB) {
 void handleInput() {
   uint8_t speed = 2;
   uint8_t direction = 0;
+  uint8_t shotFired = 0;
 
   // bounds
   uint8_t bT = 20;
@@ -78,6 +80,9 @@ void handleInput() {
   uint8_t bL = 18;
   uint8_t bR = 94;
 
+  if (~KEY_PAD & KEY_A) {
+    shotFired = 1;
+  }
   if ((~KEY_PAD & KEY_DOWN) && PC.y < bB) {
     PC.y += speed;
     direction = 2;
@@ -95,7 +100,7 @@ void handleInput() {
     direction = 4;
   }
 
-  pcShoot(direction, bL, bR, bT, bB);
+  pcShoot(direction, bL, bR, bT, bB, shotFired);
 
   /*else if ((~KEY_PAD & KEY_RIGHT & KEY_UP) && PC.y > bT && PC.x < bR) {
     speed /= 2;
