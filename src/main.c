@@ -7,120 +7,32 @@ const uint8_t _rom tiles[] _at(0x015000) = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-void drawBL() {
-  #define BL1 OAM[0]
-  BL1.x = 8;
-  BL1.y = 16;
-  BL1.tile = 1;
-  BL1.ctrl = OAM_ENABLE|OAM_FLIPV;
-
-  #define BL2 OAM[1]
-  BL2.x = 8;
-  BL2.y = 32;
-  BL2.tile = 0;
-  BL2.ctrl = OAM_ENABLE|OAM_FLIPH;
-
-  #define BL3 OAM[2]
-  BL3 = BL2;
-  BL3.y = 48;
-
-  #define BL4 OAM[3]
-  BL4.x = 8;
-  BL4.y = 64;
-  BL4.tile = 1;
-  BL4.ctrl = OAM_ENABLE;
-}
-
-void drawBR() {
-  #define BL5 OAM[4]
-  BL5.x = 8 * 13;
-  BL5.y = 16;
-  BL5.tile = 1;
-  BL5.ctrl = OAM_ENABLE|OAM_FLIPH|OAM_FLIPV;
-
-  #define BL6 OAM[5]
-  BL6.x = 8 * 13;
-  BL6.y = 32;
-  BL6.tile = 0;
-  BL6.ctrl = OAM_ENABLE;
-
-  #define BL7 OAM[6]
-  BL7 = BL6;
-  BL7.y = 48;
-
-  #define BL8 OAM[7]
-  BL8.x = 8 * 13;
-  BL8.y = 64;
-  BL8.tile = 1;
-  BL8.ctrl = OAM_ENABLE|OAM_FLIPH;
-}
-
-void drawAngry() {
-  #define A1 OAM[8]
-  A1.x = 24;
-  A1.y = 24;
-  A1.tile = 0;
-  A1.ctrl = OAM_ENABLE;
-
-  #define A2 OAM[9]
-  A2 = A1;
-  A2.x = 40;
-  A2.ctrl = A1.ctrl|OAM_FLIPH;
-
-  #define A3 OAM[10]
-  A3.x = A1.x;
-  A3.y = 40;
-  A3.tile = 3;
-  A3.ctrl = OAM_ENABLE;
-
-  #define A4 OAM[12]
-  A4 = A3;
-  A4.x = 40;
-  A4.ctrl = A3.ctrl|OAM_FLIPH;
-}
-
-void drawCockedRevolver() {
-  #define R1 OAM[13]
-  R1.x = 56;
-  R1.y = 36;
-  R1.tile = 12;
-  R1.ctrl = OAM_ENABLE;
-
-  #define R2 OAM[14]
-  R2 = R1;
-  R2.x = R1.x + 16;
-  R2.tile = 13;
-}
-
-void drawEntities(b) {
-  uint8_t ovr = 3;
-  uint8_t bFlipV = 0;
-  uint8_t bFlipH = 0;
-
+void drawEntities() {
   #define PC OAM[23]
-  PC.x = 24;
-  PC.y = 24;
-  PC.tile = 4;
+  PC.x = 24 - 4;
+  PC.y = 24 - 4;
+  PC.tile = PC_ID;
   PC.ctrl = OAM_ENABLE;
 
-  #define PCO OAM[22]
-  PCO = PC;
-  PCO.tile = ovr;
-
   #define E1 OAM[21]
-  E1 = PC;
   E1.x = 48;
-  E1.y = PC.y - 8;
+  E1.y = 24;
+  E1.tile = E1_ID;
+  E1.ctrl = OAM_ENABLE;
 
-  #define E1O OAM[20]
-  if (b == 1) {
-    ovr = 5;
-    bFlipV = OAM_FLIPV;
-  }
+  #define E2 OAM[19]
+  E2.x = 64;
+  E2.y = 24;
+  E2.tile = E2_ID;
+  E2.ctrl = OAM_ENABLE;
+}
 
-  E1O = E1;
-  E1O.tile = ovr;
-  E1O.ctrl = OAM_ENABLE|bFlipV|bFlipH;
+void drawItems() {
+  #define HT OAM[0]
+  HT.x = 160;
+  HT.y = 0;
+  HT.tile = HEART_ID;
+  HT.ctrl = OAM_ENABLE;
 }
 
 int main()
@@ -128,7 +40,6 @@ int main()
   uint8_t i;
   uint8_t tw = 16;
   uint8_t th = 12;
-  uint8_t bBWall = 0;
 
   PRC_MODE = COPY_ENABLE|SPRITE_ENABLE|MAP_ENABLE|MAP_16X12;
   PRC_RATE = RATE_36FPS;
@@ -138,16 +49,19 @@ int main()
 
   // create blank tilemap
   for (i = 0; i < tw * th; i++) {
-    if (i < 12 || i > 108 || i % tw == 0 || i == 27 || i == 43 || i == 59 | i == 75 || i == 91 || i == 107) {
+    if (i < 12 || i > 108 || i % tw == 0 || i == 27 || i == 43 || i == 59 || i == 75 || i == 91 || i == 107) {
       TILEMAP[i] = 0xff;
+    }
+    else if (i == 26 || i == 42 || i == 58 || i == 74 || i == 90 || i == 106) {
+      TILEMAP[i] = 0x00;
     }
     else {
       TILEMAP[i] = 0x00;
     }
   }
 
-  bBWall = 1;
-  drawEntities(bBWall);
+  drawEntities();
+  drawItems();
 
   for(;;) {
   }
