@@ -3,6 +3,10 @@
 //#include "sprites/sprites.h"
 #include "sprites/scene1.h"
 
+// define states
+#define STITLE 0
+#define SPLAY 1
+
 const uint8_t _rom tiles[] _at(0x015000) = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
@@ -105,8 +109,8 @@ void handleInput(state) {
   uint8_t bL = 18;
   uint8_t bR = 94;
 
-  if (state == 1) {
-    if ((~KEY_PAD & KEY_A)) {
+  if (state == SPLAY) {
+    if ((~KEY_PAD & KEY_A) && shotFired == 0) {
       shotFired = 1;
     }
     if ((~KEY_PAD & KEY_DOWN) && PC.y < bB) {
@@ -136,9 +140,6 @@ int main()
   uint8_t tw = 16;
   uint8_t th = 12;
 
-  // Track player movement updated outside of loop
-  uint8_t prevPos = 0;
-
   TMR1_OSC = 0x13;
   TMR1_SCALE = 0x08 | 0x02 | 0x80 | 0x20;
   TMR1_CTRL = 0x86;
@@ -167,6 +168,6 @@ int main()
 
   for(;;) {
     wait_vsync();
-    handleInput(1);
+    handleInput(SPLAY);
   }
 }
