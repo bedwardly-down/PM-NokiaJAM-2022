@@ -7,23 +7,43 @@
 #define STITLE 0
 #define SPLAY 1
 
+// define entity attributes
+#define ACTIVE 0x01
+#define HOSTILE 0x02
+#define FAST 0x04
+#define GROUNDED 0x08
+#define MOBILE 0x10
+#define LOOT 0x20
+#define SPECIAL 0x40
+#define EXIT 0x80
+
+// define entity misc
+#define HIT1 0x01
+#define HIT2 0x02
+#define HIT3 0x04
+#define HIT4 0x08
+#define HEART 0x10
+#define BOMB 0x20
+#define KEY 0x40
+#define COIN 0x80
+
+// global variables
+#define MAX_ENTITIES 5
+
 struct entity {
-  unsigned int bActive : 1;
-  unsigned int bHostile : 1;
-  unsigned int bFast : 1;
-  unsigned int bGrounded : 1;
-  unsigned int bMobile : 1;
-  unsigned int bLoot : 1;
-  unsigned int bSpecial : 1;
-  unsigned int bExit : 1;
+  uint8_t attributes;
+  uint8_t misc;
+  uint8_t sprite1;
+  uint8_t sprite2;
 };
 
-const uint8_t _rom tiles[] _at(0x015000) = {
+// 0x07f808 + for _rom blanks tiles out
+const uint8_t _rom tiles[] _at(0x07f700) = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
 void initEntities() {
-  struct entity *pc;
+  //struct entity *ePtr;
 
   #define PC OAM[4]
   PC.x = 24 - 4;
