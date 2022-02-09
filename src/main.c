@@ -7,11 +7,24 @@
 #define STITLE 0
 #define SPLAY 1
 
+struct entity {
+  unsigned int bActive : 1;
+  unsigned int bHostile : 1;
+  unsigned int bFast : 1;
+  unsigned int bGrounded : 1;
+  unsigned int bMobile : 1;
+  unsigned int bLoot : 1;
+  unsigned int bSpecial : 1;
+  unsigned int bExit : 1;
+};
+
 const uint8_t _rom tiles[] _at(0x015000) = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-void drawEntities() {
+void initEntities() {
+  struct entity *pc;
+
   #define PC OAM[4]
   PC.x = 24 - 4;
   PC.y = 24 - 4;
@@ -40,7 +53,7 @@ void drawEntities() {
   E2.ctrl = OAM_ENABLE;
 }
 
-void drawItems() {
+void initItems() {
   #define HT OAM[0]
   HT.x = 96;
   HT.y = 0;
@@ -163,8 +176,8 @@ int main()
     }
   }
 
-  drawEntities();
-  drawItems();
+  initEntities();
+  initItems();
 
   for(;;) {
     wait_vsync();
