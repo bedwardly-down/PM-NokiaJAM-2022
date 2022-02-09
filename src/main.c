@@ -3,6 +3,12 @@
 //#include "sprites/sprites.h"
 #include "sprites/scene1.h"
 
+// define room bounds
+#define BT 20
+#define BB 60
+#define BL 18
+#define BR 94
+
 // define states
 #define STITLE 0
 #define SPLAY 1
@@ -28,7 +34,7 @@
 #define COIN 0x80
 
 // global variables
-#define MAX_ENTITIES 5
+#define MAX_ENTITIES 6
 
 struct entity {
   uint8_t attributes;
@@ -43,8 +49,7 @@ const uint8_t _rom tiles[] _at(0x07f700) = {
 };
 
 void initEntities() {
-  //struct entity *ePtr;
-
+  // Player + their fists
   #define PC OAM[4]
   PC.x = 24 - 4;
   PC.y = 24 - 4;
@@ -60,6 +65,7 @@ void initEntities() {
   #define SHOT2 OAM[3]
   SHOT2 = SHOT;
 
+  // Enemy sprites
   #define E1 OAM[21]
   E1.x = 48;
   E1.y = 24;
@@ -71,6 +77,12 @@ void initEntities() {
   E2.y = 24;
   E2.tile = E2_ID;
   E2.ctrl = OAM_ENABLE;
+
+  #define E3 OAM[17]
+  E3.x = 72;
+  E3.y = 24;
+  E3.tile = PC_ID;
+  E3.ctrl = OAM_ENABLE;
 }
 
 void initItems() {
@@ -81,7 +93,7 @@ void initItems() {
   HT.ctrl = OAM_ENABLE;
 }
 
-void pcShoot(d, bL, bR, bT, bB, s) {
+void pcShoot(d, s) {
   uint8_t yP = 0;
   uint8_t xP = 0;
   uint8_t bP = 4;
@@ -89,22 +101,22 @@ void pcShoot(d, bL, bR, bT, bB, s) {
 
   if (d != 0 && s >= 1) {
     PRC_RATE = RATE_6FPS;
-    if (d == 1 && !(SHOT.y - bP <= bT)) {
+    if (d == 1 && !(SHOT.y - bP <= BT)) {
       yP = -1;
       SHOT.ctrl = OAM_ENABLE;
       SHOT2.ctrl = !OAM_ENABLE;
     }
-    else if (d == 2 && !(SHOT2.y + bP >= bB)) {
+    else if (d == 2 && !(SHOT2.y + bP >= BB)) {
       yP = 1;
       SHOT.ctrl = !OAM_ENABLE;
       SHOT2.ctrl = OAM_ENABLE;
     }
-    else if (d == 3 && !(SHOT.x - bP <= bL)) {
+    else if (d == 3 && !(SHOT.x - bP <= BL)) {
       xP = -1;
       SHOT.ctrl = OAM_ENABLE;
       SHOT2.ctrl = !OAM_ENABLE;
     }
-    else if (d == 4 && !(SHOT.x + bP >= bR)) {
+    else if (d == 4 && !(SHOT.x + bP >= BR)) {
       xP = 1;
       SHOT.ctrl = OAM_ENABLE;
       SHOT2.ctrl = !OAM_ENABLE;
@@ -136,34 +148,29 @@ void handleInput(state) {
   uint8_t shotFired = 0;
   uint8_t shotDelay = 0;
 
-  // bounds
-  uint8_t bT = 20;
-  uint8_t bB = 60;
-  uint8_t bL = 18;
-  uint8_t bR = 94;
-
   if (state == SPLAY) {
     if ((~KEY_PAD & KEY_A) && shotFired == 0) {
       shotFired = 1;
     }
-    if ((~KEY_PAD & KEY_DOWN) && PC.y < bB) {
+    if ((~KEY_PAD & KEY_DOWN) && PC.y < BB) {
       PC.y += speed;
       direction = 2;
     }
-    else if ((~KEY_PAD & KEY_UP) && PC.y > bT) {
+    else if ((~KEY_PAD & KEY_UP) && PC.y > BT) {
       PC.y -= speed;
       direction = 1;
     }
-    else if ((~KEY_PAD & KEY_LEFT) && PC.x > bL) {
+    else if ((~KEY_PAD & KEY_LEFT) && PC.x > BL) {
       PC.x -= speed;
       direction = 3;
     }
-    else if ((~KEY_PAD & KEY_RIGHT) && PC.x < bR) {
+    else if ((~KEY_PAD & KEY_RIGHT) && PC.x < BR) {
       PC.x += speed;
       direction = 4;
     }
 
-    pcShoot(direction, bL, bR, bT, bB, shotFired);
+    pcShoot(direction, shotFired);
+
   }
 }
 
