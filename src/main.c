@@ -9,6 +9,12 @@
 #define BL 18
 #define BR 94
 
+// define directions
+#define DDOWN 0x01
+#define DUP 0x02
+#define DLEFT 0x04
+#define DRIGHT 0x08
+
 // define combat variables
 #define CDELAY 2
 #define PSPEED 2
@@ -116,22 +122,22 @@ void pcShoot(struct entity *p, uint8_t d, uint8_t s) {
   uint8_t sFct = 3;
 
   if (d != 0 && s == 1 && sDelay == 0) {
-    if (d == 1 && !(p->oam[PLINDEX + 1].y - bP <= BT)) {
+    if (d == DUP && !(p->oam[PLINDEX + 1].y - bP <= BT)) {
       yP = -1;
       p->oam[PLINDEX + 1].ctrl = OAM_ENABLE;
       p->oam[PLINDEX - 1].ctrl = !OAM_ENABLE;
     }
-    else if (d == 2 && !(p->oam[PLINDEX - 1].y + bP >= BB)) {
+    else if (d == DDOWN && !(p->oam[PLINDEX - 1].y + bP >= BB)) {
       yP = 1;
       p->oam[PLINDEX + 1].ctrl = !OAM_ENABLE;
       p->oam[PLINDEX - 1].ctrl = OAM_ENABLE;
     }
-    else if (d == 3 && !(p->oam[PLINDEX + 1].x - bP <= BL)) {
+    else if (d == DLEFT && !(p->oam[PLINDEX + 1].x - bP <= BL)) {
       xP = -1;
       p->oam[PLINDEX + 1].ctrl = OAM_ENABLE;
       p->oam[PLINDEX - 1].ctrl = !OAM_ENABLE;
     }
-    else if (d == 4 && !(p->oam[PLINDEX + 1].x + bP >= BR)) {
+    else if (d == DRIGHT && !(p->oam[PLINDEX + 1].x + bP >= BR)) {
       xP = 1;
       p->oam[PLINDEX + 1].ctrl = OAM_ENABLE;
       p->oam[PLINDEX - 1].ctrl = !OAM_ENABLE;
@@ -170,22 +176,22 @@ void handleInput(uint8_t state, struct entity *p) {
     }
     if ((~KEY_PAD & KEY_DOWN) && p->oam[PLINDEX].y < BB) {
       p->oam[PLINDEX].y += p->speed;
-      direction = 2;
+      direction = DDOWN;
       tMoved++;
     }
     else if ((~KEY_PAD & KEY_UP) && p->oam[PLINDEX].y > BT) {
       p->oam[PLINDEX].y -= p->speed;
-      direction = 1;
+      direction = DUP;
       tMoved++;
     }
     else if ((~KEY_PAD & KEY_LEFT) && p->oam[PLINDEX].x > BL) {
       p->oam[PLINDEX].x -= p->speed;
-      direction = 3;
+      direction = DLEFT;
       tMoved++;
     }
     else if ((~KEY_PAD & KEY_RIGHT) && p->oam[PLINDEX].x < BR) {
       p->oam[PLINDEX].x += p->speed;
-      direction = 4;
+      direction = DRIGHT;
       tMoved++;
     }
 
