@@ -17,6 +17,7 @@ uint8_t sDelay = 0;
 
 // define OAM Indexes
 #define PLINDEX 4
+#define HTINDEX 19
 
 // define states
 #define STITLE 0
@@ -79,33 +80,33 @@ void initPlayer(struct entity *p) {
   p->oam[PLINDEX - 1].y = p->oam[PLINDEX].y;
   p->oam[PLINDEX - 1].tile = SHOT_ID;
   p->oam[PLINDEX - 1].ctrl = !OAM_ENABLE;
-
-  // Enemy sprites
-  #define E1 OAM[21]
-  E1.x = 48;
-  E1.y = 24;
-  E1.tile = E1_ID;
-  E1.ctrl = OAM_ENABLE;
-//
-//  #define E2 OAM[19]
-//  E2.x = 64;
-//  E2.y = 24;
-//  E2.tile = E2_ID;
-//  E2.ctrl = OAM_ENABLE;
-//
-//  #define E3 OAM[17]
-//  E3.x = 72;
-//  E3.y = 24;
-//  E3.tile = PC_ID;
-//  E3.ctrl = OAM_ENABLE;
 }
 
-void initItems() {
-  #define HT OAM[0]
-  HT.x = 96;
-  HT.y = 0;
-  HT.tile = HEART_ID;
-  HT.ctrl = OAM_ENABLE;
+void initLoot(struct entity *p) {
+  // init Heart
+  p->oam = OAM;
+  p->oam[HTINDEX].x = 96;
+  p->oam[HTINDEX].y = 4;
+  p->oam[HTINDEX].tile = HEART_ID;
+  p->oam[HTINDEX].ctrl = !OAM_ENABLE;
+
+  // init Bomb
+  p->oam[HTINDEX + 1].x = 96;
+  p->oam[HTINDEX + 1].y = 4;
+  p->oam[HTINDEX + 1].tile = BOMB_ID;
+  p->oam[HTINDEX + 1].ctrl = !OAM_ENABLE;
+
+  // init Key
+  p->oam[HTINDEX + 2].x = 96;
+  p->oam[HTINDEX + 2].y = 4;
+  p->oam[HTINDEX + 2].tile = KEY_ID;
+  p->oam[HTINDEX + 2].ctrl = !OAM_ENABLE;
+
+  // init Coin
+  p->oam[HTINDEX + 3].x = 96;
+  p->oam[HTINDEX + 3].y = 4;
+  p->oam[HTINDEX + 3].tile = COIN_ID;
+  p->oam[HTINDEX + 3].ctrl = !OAM_ENABLE;
 }
 
 void pcShoot(struct entity *p, uint8_t d, uint8_t s) {
@@ -200,10 +201,11 @@ int main()
   uint8_t th = 12;
 
   // Player Entity Ptr
-  struct entity player;
-  struct entity *pPtr;
+  struct entity player, loot;
+  struct entity *pPtr, *lPtr;
 
   pPtr = &player;
+  lPtr = &loot;
 
   TMR1_OSC = 0x13;
   TMR1_SCALE = 0x08 | 0x02 | 0x80 | 0x20;
@@ -229,7 +231,7 @@ int main()
   }
 
   initPlayer(pPtr);
-  //initItems();
+  initLoot(lPtr);
 
   for(;;) {
     wait_vsync();
