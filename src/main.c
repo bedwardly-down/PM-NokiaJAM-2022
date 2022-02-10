@@ -54,7 +54,13 @@ const uint8_t _rom tiles[] _at(0x07f700) = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-void initPlayer() {
+void initPlayer(struct entity *p) {
+  p->attributes = ACTIVE|GROUNDED|MOBILE;
+  // should make PC only be able to take 3 hits
+  p->misc = HIT4;
+  p->misc ^= (p->misc & 0x0f);
+  p->sprite1 = PC_ID;
+
   // Player + their fists
   #define PC OAM[4]
   PC.x = 24 - 4;
@@ -155,7 +161,7 @@ void handleInput(state) {
 
   if (state = SPLAY) {
     if ((~KEY_PAD & KEY_A) && sDelay == 0) {
-      speed += 1;
+      speed += (PC.y > BB || PC.y < BT || PC.x > BR || PC.x < BL) ? 0 : 1;
       shotFired = 1;
     }
     if ((~KEY_PAD & KEY_DOWN) && PC.y < BB) {
@@ -190,6 +196,12 @@ int main()
   uint8_t tw = 16;
   uint8_t th = 12;
 
+  // Player Entity Ptr
+  struct entity player;
+  struct entity *pPtr;
+
+  pPtr = &player;
+
   TMR1_OSC = 0x13;
   TMR1_SCALE = 0x08 | 0x02 | 0x80 | 0x20;
   TMR1_CTRL = 0x86;
@@ -213,7 +225,7 @@ int main()
     }
   }
 
-  initPlayer();
+  initPlayer(pPtr);
   initItems();
 
   for(;;) {
