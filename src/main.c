@@ -43,10 +43,12 @@ uint8_t sDelay = 0;
 #define MAX_ENTITIES 6
 
 struct entity {
+  oam_sprite_t *oam;
   uint8_t attributes;
-  uint8_t misc;
-  uint8_t sprite1;
-  uint8_t sprite2;
+  uint8_t hits;
+  uint8_t loot;
+  //uint8_t sprite;
+  uint8_t speed;
 };
 
 // 0x07f808 + for _rom blanks tiles out
@@ -54,12 +56,13 @@ const uint8_t _rom tiles[] _at(0x07f700) = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-void initPlayer(struct entity *p) {
+void initPlayer(struct entity *p, uint8_t index) {
   p->attributes = ACTIVE|GROUNDED|MOBILE;
   // should make PC only be able to take 3 hits
-  p->misc = HIT4;
-  p->misc ^= (p->misc & 0x0f);
-  p->sprite1 = PC_ID;
+  //p->misc = HIT4;
+  //p->misc ^= (p->misc & 0x0f);
+  //p->sprite = PC_ID;
+  p->oam[index];
 
   // Player + their fists
   #define PC OAM[4]
@@ -161,7 +164,7 @@ void handleInput(state) {
 
   if (state = SPLAY) {
     if ((~KEY_PAD & KEY_A) && sDelay == 0) {
-      speed += (PC.y > BB || PC.y < BT || PC.x > BR || PC.x < BL) ? 0 : 1;
+      speed += ((PC.y > BB && direction == 2) || (PC.y < BT && direction == 1) || (PC.x > BR && direction == 4) || (PC.x < BL && direction == 3)) ? 0 : 1;
       shotFired = 1;
     }
     if ((~KEY_PAD & KEY_DOWN) && PC.y < BB) {
@@ -225,8 +228,8 @@ int main()
     }
   }
 
-  initPlayer(pPtr);
-  initItems();
+  initPlayer(pPtr, 4);
+  //initItems();
 
   for(;;) {
     wait_vsync();
