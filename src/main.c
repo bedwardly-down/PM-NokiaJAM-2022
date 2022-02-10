@@ -15,6 +15,9 @@
 uint8_t tMoved = 0;
 uint8_t sDelay = 0;
 
+// define OAM Indexes
+#define PLINDEX 4
+
 // define states
 #define STITLE 0
 #define SPLAY 1
@@ -47,7 +50,6 @@ struct entity {
   uint8_t attributes;
   uint8_t hits;
   uint8_t loot;
-  //uint8_t sprite;
   uint8_t speed;
 };
 
@@ -56,29 +58,27 @@ const uint8_t _rom tiles[] _at(0x07f700) = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-void initPlayer(struct entity *p, uint8_t index) {
+void initPlayer(struct entity *p) {
+  // PC pointer
   p->attributes = ACTIVE|GROUNDED|MOBILE;
-  // should make PC only be able to take 3 hits
-  //p->misc = HIT4;
-  //p->misc ^= (p->misc & 0x0f);
-  //p->sprite = PC_ID;
-  p->oam[index];
+  p->speed = PSPEED;
+  p->oam = OAM;
+  p->oam[PLINDEX].x = 20;
+  p->oam[PLINDEX].y = 20;
+  p->oam[PLINDEX].tile = PC_ID;
+  p->oam[PLINDEX].ctrl = OAM_ENABLE;
 
-  // Player + their fists
-  #define PC OAM[4]
-  PC.x = 24 - 4;
-  PC.y = 24 - 4;
-  PC.tile = PC_ID;
-  PC.ctrl = OAM_ENABLE;
+  // Fist1
+  p->oam[PLINDEX + 1].x = p->oam[PLINDEX].x;
+  p->oam[PLINDEX + 1].y = p->oam[PLINDEX].y;
+  p->oam[PLINDEX + 1].tile = SHOT_ID;
+  p->oam[PLINDEX + 1].ctrl = !OAM_ENABLE;
 
-  #define SHOT OAM[5]
-  SHOT.x = 96;
-  SHOT.y = 0;
-  SHOT.tile = SHOT_ID;
-  SHOT.ctrl = !OAM_ENABLE;
-
-  #define SHOT2 OAM[3]
-  SHOT2 = SHOT;
+  // Fist2
+  p->oam[PLINDEX - 1].x = p->oam[PLINDEX].x;
+  p->oam[PLINDEX - 1].y = p->oam[PLINDEX].y;
+  p->oam[PLINDEX - 1].tile = SHOT_ID;
+  p->oam[PLINDEX - 1].ctrl = !OAM_ENABLE;
 
   // Enemy sprites
   #define E1 OAM[21]
@@ -108,87 +108,87 @@ void initItems() {
   HT.ctrl = OAM_ENABLE;
 }
 
-void pcShoot(d, s, spd) {
+void pcShoot(struct entity *p, uint8_t d, uint8_t s) {
   uint8_t yP = 0;
   uint8_t xP = 0;
-  uint8_t bP = 4;
+  uint8_t bP = 3;
   uint8_t sFct = 3;
 
   if (d != 0 && s == 1 && sDelay == 0) {
-    if (d == 1 && !(SHOT.y - bP <= BT)) {
+    if (d == 1 && !(p->oam[PLINDEX + 1].y - bP <= BT)) {
       yP = -1;
-      SHOT.ctrl = OAM_ENABLE;
-      SHOT2.ctrl = !OAM_ENABLE;
+      p->oam[PLINDEX + 1].ctrl = OAM_ENABLE;
+      p->oam[PLINDEX - 1].ctrl = !OAM_ENABLE;
     }
-    else if (d == 2 && !(SHOT2.y + bP >= BB)) {
+    else if (d == 2 && !(p->oam[PLINDEX - 1].y + bP >= BB)) {
       yP = 1;
-      SHOT.ctrl = !OAM_ENABLE;
-      SHOT2.ctrl = OAM_ENABLE;
+      p->oam[PLINDEX + 1].ctrl = !OAM_ENABLE;
+      p->oam[PLINDEX - 1].ctrl = OAM_ENABLE;
     }
-    else if (d == 3 && !(SHOT.x - bP <= BL)) {
+    else if (d == 3 && !(p->oam[PLINDEX + 1].x - bP <= BL)) {
       xP = -1;
-      SHOT.ctrl = OAM_ENABLE;
-      SHOT2.ctrl = !OAM_ENABLE;
+      p->oam[PLINDEX + 1].ctrl = OAM_ENABLE;
+      p->oam[PLINDEX - 1].ctrl = !OAM_ENABLE;
     }
-    else if (d == 4 && !(SHOT.x + bP >= BR)) {
+    else if (d == 4 && !(p->oam[PLINDEX + 1].x + bP >= BR)) {
       xP = 1;
-      SHOT.ctrl = OAM_ENABLE;
-      SHOT2.ctrl = !OAM_ENABLE;
+      p->oam[PLINDEX + 1].ctrl = OAM_ENABLE;
+      p->oam[PLINDEX - 1].ctrl = !OAM_ENABLE;
     }
     else {
-      spd = PSPEED;
+      p->speed = PSPEED;
       tMoved = 0;
       sDelay = 1;
-      SHOT.ctrl = !OAM_ENABLE;
-      SHOT2.ctrl = !OAM_ENABLE;
+      p->oam[PLINDEX - 1].ctrl = !OAM_ENABLE;
+      p->oam[PLINDEX + 1].ctrl = !OAM_ENABLE;
     }
 
     sDelay = (tMoved % CDELAY == 0) ? 1 : 0;
-    SHOT.x = (PC.x + (xP * sFct));
-    SHOT.y = (PC.y + (yP * sFct));
-    SHOT2.x = (PC.x + (xP * sFct));
-    SHOT2.y = (PC.y + (yP * sFct));
+    p->oam[PLINDEX - 1].x = (p->oam[PLINDEX].x + (xP * sFct));
+    p->oam[PLINDEX - 1].y = (p->oam[PLINDEX].y + (yP * sFct));
+    p->oam[PLINDEX + 1].x = (p->oam[PLINDEX].x + (xP * sFct));
+    p->oam[PLINDEX + 1].y = (p->oam[PLINDEX].y + (yP * sFct));
   }
   else {
+    p->speed = PSPEED;
     tMoved = 0;
     sDelay = 0;
-    SHOT.ctrl = !OAM_ENABLE;
-    SHOT2.ctrl = !OAM_ENABLE;
+    p->oam[PLINDEX - 1].ctrl = !OAM_ENABLE;
+    p->oam[PLINDEX + 1].ctrl = !OAM_ENABLE;
   }
 }
 
-void handleInput(state) {
-  uint8_t speed = PSPEED;
+void handleInput(uint8_t state, struct entity *p) {
   uint8_t direction = 0;
   uint8_t shotFired = 0;
 
   if (state = SPLAY) {
     if ((~KEY_PAD & KEY_A) && sDelay == 0) {
-      speed += ((PC.y > BB && direction == 2) || (PC.y < BT && direction == 1) || (PC.x > BR && direction == 4) || (PC.x < BL && direction == 3)) ? 0 : 1;
+      //p->speed = ((p->oam[PLINDEX].y > BB && direction == 2) || (p->oam[PLINDEX].y < BT && direction == 1) || (p->oam[PLINDEX].x > BR && direction == 4) || (p->oam[PLINDEX].x < BL && direction == 3)) ? 0 : PSPEED + 1;
       shotFired = 1;
     }
-    if ((~KEY_PAD & KEY_DOWN) && PC.y < BB) {
-      PC.y += speed;
+    if ((~KEY_PAD & KEY_DOWN) && p->oam[PLINDEX].y < BB) {
+      p->oam[PLINDEX].y += p->speed;
       direction = 2;
       tMoved++;
     }
-    else if ((~KEY_PAD & KEY_UP) && PC.y > BT) {
-      PC.y -= speed;
+    else if ((~KEY_PAD & KEY_UP) && p->oam[PLINDEX].y > BT) {
+      p->oam[PLINDEX].y -= p->speed;
       direction = 1;
       tMoved++;
     }
-    else if ((~KEY_PAD & KEY_LEFT) && PC.x > BL) {
-      PC.x -= speed;
+    else if ((~KEY_PAD & KEY_LEFT) && p->oam[PLINDEX].x > BL) {
+      p->oam[PLINDEX].x -= p->speed;
       direction = 3;
       tMoved++;
     }
-    else if ((~KEY_PAD & KEY_RIGHT) && PC.x < BR) {
-      PC.x += speed;
+    else if ((~KEY_PAD & KEY_RIGHT) && p->oam[PLINDEX].x < BR) {
+      p->oam[PLINDEX].x += p->speed;
       direction = 4;
       tMoved++;
     }
 
-    pcShoot(direction, shotFired, speed);
+    pcShoot(p, direction, shotFired);
 
   }
 }
@@ -228,11 +228,11 @@ int main()
     }
   }
 
-  initPlayer(pPtr, 4);
+  initPlayer(pPtr);
   //initItems();
 
   for(;;) {
     wait_vsync();
-    handleInput(SPLAY);
+    handleInput(SPLAY, pPtr);
   }
 }
