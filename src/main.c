@@ -9,6 +9,12 @@
 #define BL 18
 #define BR 94
 
+// define combat variables
+#define CDELAY 2
+#define PSPEED 2
+uint8_t tMoved = 0;
+uint8_t sDelay = 0;
+
 // define states
 #define STITLE 0
 #define SPLAY 1
@@ -48,7 +54,7 @@ const uint8_t _rom tiles[] _at(0x07f700) = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-void initEntities() {
+void initPlayer() {
   // Player + their fists
   #define PC OAM[4]
   PC.x = 24 - 4;
@@ -71,18 +77,18 @@ void initEntities() {
   E1.y = 24;
   E1.tile = E1_ID;
   E1.ctrl = OAM_ENABLE;
-
-  #define E2 OAM[19]
-  E2.x = 64;
-  E2.y = 24;
-  E2.tile = E2_ID;
-  E2.ctrl = OAM_ENABLE;
-
-  #define E3 OAM[17]
-  E3.x = 72;
-  E3.y = 24;
-  E3.tile = PC_ID;
-  E3.ctrl = OAM_ENABLE;
+//
+//  #define E2 OAM[19]
+//  E2.x = 64;
+//  E2.y = 24;
+//  E2.tile = E2_ID;
+//  E2.ctrl = OAM_ENABLE;
+//
+//  #define E3 OAM[17]
+//  E3.x = 72;
+//  E3.y = 24;
+//  E3.tile = PC_ID;
+//  E3.ctrl = OAM_ENABLE;
 }
 
 void initItems() {
@@ -93,14 +99,13 @@ void initItems() {
   HT.ctrl = OAM_ENABLE;
 }
 
-void pcShoot(d, s) {
+void pcShoot(d, s, spd) {
   uint8_t yP = 0;
   uint8_t xP = 0;
   uint8_t bP = 4;
   uint8_t sFct = 3;
 
-  if (d != 0 && s >= 1) {
-    PRC_RATE = RATE_6FPS;
+  if (d != 0 && s == 1 && sDelay == 0) {
     if (d == 1 && !(SHOT.y - bP <= BT)) {
       yP = -1;
       SHOT.ctrl = OAM_ENABLE;
@@ -122,54 +127,59 @@ void pcShoot(d, s) {
       SHOT2.ctrl = !OAM_ENABLE;
     }
     else {
+      spd = PSPEED;
+      tMoved = 0;
+      sDelay = 1;
       SHOT.ctrl = !OAM_ENABLE;
       SHOT2.ctrl = !OAM_ENABLE;
-      PRC_RATE = RATE_9FPS;
     }
 
+    sDelay = (tMoved % CDELAY == 0) ? 1 : 0;
     SHOT.x = (PC.x + (xP * sFct));
     SHOT.y = (PC.y + (yP * sFct));
     SHOT2.x = (PC.x + (xP * sFct));
     SHOT2.y = (PC.y + (yP * sFct));
-
-    // time the shots so you can't spam them / hold too long
-    s = 0;
   }
   else {
+    tMoved = 0;
+    sDelay = 0;
     SHOT.ctrl = !OAM_ENABLE;
     SHOT2.ctrl = !OAM_ENABLE;
-    PRC_RATE = RATE_12FPS;
   }
 }
 
 void handleInput(state) {
-  uint8_t speed = 2;
+  uint8_t speed = PSPEED;
   uint8_t direction = 0;
   uint8_t shotFired = 0;
-  uint8_t shotDelay = 0;
 
-  if (state == SPLAY) {
-    if ((~KEY_PAD & KEY_A) && shotFired == 0) {
+  if (state = SPLAY) {
+    if ((~KEY_PAD & KEY_A) && sDelay == 0) {
+      speed += 1;
       shotFired = 1;
     }
     if ((~KEY_PAD & KEY_DOWN) && PC.y < BB) {
       PC.y += speed;
       direction = 2;
+      tMoved++;
     }
     else if ((~KEY_PAD & KEY_UP) && PC.y > BT) {
       PC.y -= speed;
       direction = 1;
+      tMoved++;
     }
     else if ((~KEY_PAD & KEY_LEFT) && PC.x > BL) {
       PC.x -= speed;
       direction = 3;
+      tMoved++;
     }
     else if ((~KEY_PAD & KEY_RIGHT) && PC.x < BR) {
       PC.x += speed;
       direction = 4;
+      tMoved++;
     }
 
-    pcShoot(direction, shotFired);
+    pcShoot(direction, shotFired, speed);
 
   }
 }
@@ -203,7 +213,7 @@ int main()
     }
   }
 
-  initEntities();
+  initPlayer();
   initItems();
 
   for(;;) {
