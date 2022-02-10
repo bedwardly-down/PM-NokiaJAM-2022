@@ -18,12 +18,17 @@
 // define combat variables
 #define CDELAY 2
 #define PSPEED 2
+#define MAX_SEED 16
+
+// These might be bad but they're sparingly used
+uint8_t eSpawned = 0;
 uint8_t tMoved = 0;
 uint8_t sDelay = 0;
 
 // define OAM Indexes
 #define PLINDEX 4
-#define HTINDEX 19
+#define HTINDEX 12
+#define ENINDEX 20
 
 // define states
 #define STITLE 0
@@ -50,13 +55,13 @@ uint8_t sDelay = 0;
 #define COIN 0x80
 
 // global variables
-#define MAX_ENTITIES 6
+#define MAX_ENTITIES 3
 
 struct entity {
   oam_sprite_t *oam;
   uint8_t attributes;
-  uint8_t hits;
-  uint8_t loot;
+  uint8_t misc;
+  uint8_t seed;
   uint8_t speed;
 };
 
@@ -64,6 +69,47 @@ struct entity {
 const uint8_t _rom tiles[] _at(0x07f700) = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
+
+void rng(struct entity *p) {
+  if (p->attributes != ACTIVE) {
+    p->seed += (TMR256_CNT % MAX_SEED != 0 && p->seed < MAX_SEED) ? (TMR256_CNT % MAX_SEED) : 3;
+  }
+}
+
+// Spawn in from room width and height to origin
+void checkSpawnInBounds(struct entity *p, uint8_t i, uint8_t factor) {
+  if (p->seed % factor == 0) {
+    p->oam[i].x = (BR - (p->seed * 8) >= BL) ? (BR - (p->seed * 8)) : BL;
+    p->oam[i].y = (BB - (p->seed * 8) >= BT) ? (BB - (p->seed * 8)) : BB;
+  }
+  else {
+    p->oam[i].x = (BL + (p->seed * 8) <= BR) ? (BL - (p->seed * 8)) : BR;
+    p->oam[i].y = (BT + (p->seed * 8) <= BB) ? (BB + (p->seed * 8)) : BT;
+  }
+}
+
+void spawnEnemies(uint8_t state, struct entity *p) {
+  if (state == SPLAY) {
+    rng(p);
+    if (eSpawned < MAX_ENTITIES) {
+      checkSpawnInBounds(p, (ENINDEX - eSpawned), 2);
+      p->attributes |= ACTIVE;
+      eSpawned++;
+    }
+  }
+}
+
+void initEnemies(struct entity *p) {
+  uint8_t i;
+  p->oam = OAM;
+  // This was said to be bad but I feel that such a tiny size
+  // shouldn't be an issue
+  for (i = 0; i < MAX_ENTITIES; i++) {
+    p->oam[ENINDEX - i].x = 96;
+    p->oam[ENINDEX - i].y = 4;
+    p->oam[ENINDEX - i].ctrl = !OAM_ENABLE;
+  }
+}
 
 void initPlayer(struct entity *p) {
   // PC pointer
@@ -207,11 +253,12 @@ int main()
   uint8_t th = 12;
 
   // Player Entity Ptr
-  struct entity player, loot;
-  struct entity *pPtr, *lPtr;
+  struct entity player, loot, enemy;
+  struct entity *pPtr, *lPtr, *ePtr;
 
   pPtr = &player;
   lPtr = &loot;
+  ePtr = &enemy;
 
   TMR1_OSC = 0x13;
   TMR1_SCALE = 0x08 | 0x02 | 0x80 | 0x20;
@@ -237,10 +284,12 @@ int main()
   }
 
   initPlayer(pPtr);
+  initEnemies(ePtr);
   initLoot(lPtr);
 
   for(;;) {
     wait_vsync();
+    spawnEnemies(SPLAY, ePtr);
     handleInput(SPLAY, pPtr);
   }
 }
